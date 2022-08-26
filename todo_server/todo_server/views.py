@@ -13,7 +13,7 @@ from .serializers import TodoSerializer
 
 class TodosView(generics.ListCreateAPIView):
     queryset = Todo.objects.all();
-    #pagination_class = pagination.PageNumberPagination
+    pagination_class = pagination.PageNumberPagination
     serializer_class = TodoSerializer
 
     def list(self, request, *args, **kwargs):
@@ -22,8 +22,6 @@ class TodosView(generics.ListCreateAPIView):
         if page is not None:
             serializer = self.get_serializer(page, many=True)
         serializer = self.get_serializer(queryset, many=True)
-        print('serializer data: \n')
-        print(serializer.data)
         return Response(serializer.data)
 
 class TodoView(generics.RetrieveUpdateDestroyAPIView):

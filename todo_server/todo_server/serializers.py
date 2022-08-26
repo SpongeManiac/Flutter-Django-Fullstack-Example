@@ -6,6 +6,7 @@ def getTime():
     return datetime.min
 
 class TodoSerializer(serializers.Serializer):
+    id = serializers.ReadOnlyField()
     title = serializers.CharField(max_length=128)
     description = serializers.CharField(max_length=1024)
     completed = serializers.BooleanField()
@@ -19,7 +20,9 @@ class TodoSerializer(serializers.Serializer):
         instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get('description', instance.description)
         instance.completed = validated_data.get('completed', instance.completed)
-        instance.date_completed = validated_data.get('date_completed', instance.date_completed)
-        instance.date_created = validated_data.get('date_created', instance.date_created)
         instance.save()
         return instance
+    
+    class Meta:
+        model = Todo
+        fields = ('id', 'title', 'description', 'completed')

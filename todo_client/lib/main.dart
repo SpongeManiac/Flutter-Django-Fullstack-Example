@@ -104,15 +104,17 @@ class _MyHomePageState extends State<MyHomePage> {
                       itemCount: list.length,
                       itemBuilder: ((context, index) {
                         Todo item = list[index];
+                        print('Item ${item.id}: ${item.title}');
                         return ListTile(
                           title: Text(item.title),
                           subtitle: Text(item.description),
                           trailing: Checkbox(
                             value: item.completed,
-                            onChanged: (value) {
-                              setState(() {
-                                item.completed = value ?? false;
-                              });
+                            onChanged: (value) async {
+                              var newTodo = item;
+                              newTodo.completed = value ?? false;
+                              await TodoAPI.updateTodo(newTodo);
+                              setState(() {});
                             },
                           ),
                         );
