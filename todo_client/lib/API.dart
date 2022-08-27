@@ -49,9 +49,9 @@ class TodoAPI {
     }
   }
 
-  static Future<bool> delTodo(int id) async {
-    print('Deleting todo $id...');
-    var uri = Uri.parse('$todosUri$id/$jsonFormat');
+  static Future<bool> delTodo(Todo todo) async {
+    print('Deleting todo ${todo.id}...');
+    var uri = Uri.parse('$todosUri${todo.id}');
     var response = await http.delete(uri);
     if (response.statusCode == 200) {
       return true;
