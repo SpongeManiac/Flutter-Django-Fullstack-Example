@@ -2,7 +2,7 @@
 
 An example project to demonstrate how to create a fullstack, cross-platform app using Flutter and Django.
 This project is purely for learning purposes and is not production ready.
-Originally inspired by [Dennis Ivanov](https://www.youtube.com/watch?v=VnztChBw7Og&ab_channel=DennisIvy)
+Originally inspired by [Dennis Ivanov](https://www.youtube.com/watch?v=VnztChBw7Og&ab_channel=DennisIvy)'s livestream.
 
 ## Requirements
 To run this example stack, you will need Python3 and Flutter.
