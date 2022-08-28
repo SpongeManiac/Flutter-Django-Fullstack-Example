@@ -51,4 +51,4 @@ Please choose one (To quit, press "q/Q"): 2
 ```
 
 ## Viewing/Editing Todos Manually
-You can view and edit the Todo database manually by navigating to [http://localhost:8000/todos/](http://localhost:8000/todos/). To view an individual todo, add the todo's `id` to the end of the URL: `http://localhost:8000/todos/1` will show you the first todo.
+You can view and edit the Todo database manually by navigating to [http://localhost:8000/todos/](http://localhost:8000/todos/). To view or edit an individual todo, add the todo's `id` to the end of the URL: `http://localhost:8000/todos/1` will show you the first todo.
