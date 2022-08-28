@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'BasePage.dart';
+import 'base_page.dart';
 
 enum ViewState {
   create,
@@ -34,14 +34,12 @@ abstract class CRUDState<T> extends State<BasePage> {
         break;
       case ViewState.update:
         if (item == null) {
-          print('gave null item, cancelling update');
         } else {
           await setUpdate(item);
         }
         break;
       case ViewState.delete:
         if (item == null) {
-          print('gave null item, cancelling delete');
         } else {
           await setDelete(item);
         }
@@ -102,7 +100,6 @@ abstract class CRUDState<T> extends State<BasePage> {
     return ValueListenableBuilder<ViewState>(
       valueListenable: stateNotifier,
       builder: (context, state, _) {
-        print('current state: $state');
         switch (state) {
           case ViewState.create:
             return createView(context);
@@ -113,7 +110,7 @@ abstract class CRUDState<T> extends State<BasePage> {
           case ViewState.delete:
             return deleteView(context);
           default:
-            return Center(child: Text('Invalid State'));
+            return const Center(child: Text('Invalid State'));
         }
       },
     );

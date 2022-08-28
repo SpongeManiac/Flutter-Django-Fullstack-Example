@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 class HideableFloatingAction extends StatelessWidget {
-  HideableFloatingAction({
+  const HideableFloatingAction({
     super.key,
     required this.floatingActionNotifier,
   });
 
-  ValueNotifier<HideableFloatingActionData> floatingActionNotifier;
+  final ValueNotifier<HideableFloatingActionData> floatingActionNotifier;
 
   @override
   Widget build(BuildContext context) {

@@ -1,12 +1,12 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:todo_client/API.dart';
-import 'package:todo_client/CRUDPage.dart';
+import 'package:todo_client/todo_api.dart';
+import 'package:todo_client/crud_page.dart';
 
-import 'BasePage.dart';
-import 'Todo.dart';
-import 'hideableFloatingAction.dart';
+import 'base_page.dart';
+import 'todo.dart';
+import 'hideable_floating_action.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,13 +32,13 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Flutter/Django Fullstack App'),
     );
   }
 }
 
 class MyHomePage extends BasePage {
-  MyHomePage({super.key, required super.title});
+  const MyHomePage({super.key, required super.title});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -54,31 +54,80 @@ class MyHomePage extends BasePage {
 }
 
 class _MyHomePageState extends CRUDState<Todo> {
-  ValueNotifier<HideableFloatingActionData> floatingActionNotifier =
-      new ValueNotifier(HideableFloatingActionData(false));
+  ValueNotifier<HideableFloatingActionData> floatingActionNotifierRight =
+      ValueNotifier(HideableFloatingActionData(false));
+
+  ValueNotifier<HideableFloatingActionData> floatingActionNotifierLeft =
+      ValueNotifier(HideableFloatingActionData(false));
 
   TextEditingController titleField = TextEditingController();
   TextEditingController descriptionField = TextEditingController();
   bool completed = false;
 
-  void _createTodo() {}
-
   Future<List<Todo>> getTodos() async {
-    return await TodoAPI.getTodos();
+    return await TodoAPI.getTodos(context);
   }
 
+  Widget get todoForm => Form(
+        key: formKey,
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            children: [
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Title',
+                ),
+                controller: titleField,
+                validator: (value) => validateTitle(value),
+                maxLength: 128,
+              ),
+              TextFormField(
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                ),
+                controller: descriptionField,
+                validator: (value) => validateDesc(value),
+                maxLength: 1024,
+              ),
+              CheckboxListTile(
+                title: const Text('Completed'),
+                value: completed,
+                onChanged: (value) {
+                  setState(() {
+                    completed = value ?? false;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+  final GlobalKey formKey = GlobalKey<FormState>();
   @override
   void initState() {
-    floatingActionNotifier.value = HideableFloatingActionData(
+    super.initState();
+    floatingActionNotifierRight.value = HideableFloatingActionData(
       true,
       () async {
         await setCreate();
       },
-      Icon(
+      const Icon(
         Icons.add_rounded,
         color: Colors.white,
       ),
     );
+  }
+
+  String? validateTitle(String? val) {
+    val = val ?? '';
+    if (val.isEmpty || val.trim().isEmpty) return 'Please enter some text.';
+    return null;
+  }
+
+  String? validateDesc(String? val) {
+    val = val ?? '';
+    return null;
   }
 
   @override
@@ -97,23 +146,66 @@ class _MyHomePageState extends CRUDState<Todo> {
         title: Text(widget.title),
       ),
       body: super.build(context),
-      floatingActionButton: HideableFloatingAction(
-          floatingActionNotifier:
-              floatingActionNotifier), // This trailing comma makes auto-formatting nicer for build methods.
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.all(10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            HideableFloatingAction(
+                floatingActionNotifier:
+                    floatingActionNotifierLeft), // This trailing comma makes auto-formatting nicer for build methods.
+            HideableFloatingAction(
+                floatingActionNotifier: floatingActionNotifierRight),
+          ],
+        ),
+      ),
     );
   }
 
   @override
+  Future<void> setCreate() async {
+    floatingActionNotifierLeft.value = HideableFloatingActionData(
+      true,
+      () async {
+        await cancel();
+      },
+      const Icon(
+        Icons.arrow_back_rounded,
+        color: Colors.white,
+      ),
+    );
+    floatingActionNotifierRight.value = HideableFloatingActionData(
+      true,
+      () async {
+        var todo = await create();
+        if (todo.id != -1) await setRead();
+      },
+      const Icon(
+        Icons.send_rounded,
+        color: Colors.white,
+      ),
+    );
+    titleField.text = '';
+    descriptionField.text = '';
+    completed = false;
+    await super.setCreate();
+  }
+
+  @override
   Future<void> setRead() async {
-    floatingActionNotifier.value = HideableFloatingActionData(
+    floatingActionNotifierRight.value = HideableFloatingActionData(
       true,
       () async {
         await setCreate();
       },
-      Icon(
+      const Icon(
         Icons.add_rounded,
         color: Colors.white,
       ),
+    );
+    floatingActionNotifierLeft.value = HideableFloatingActionData(
+      false,
     );
     titleField.text = '';
     descriptionField.text = '';
@@ -123,24 +215,29 @@ class _MyHomePageState extends CRUDState<Todo> {
   }
 
   @override
-  Future<void> setCreate() async {
-    floatingActionNotifier.value = HideableFloatingActionData(false);
-    titleField.text = '';
-    descriptionField.text = '';
-    completed = false;
-    await super.setCreate();
-  }
-
-  @override
   Future<void> setUpdate(Todo todo) async {
     itemToEdit = todo;
-    floatingActionNotifier.value = HideableFloatingActionData(
+    floatingActionNotifierLeft.value = HideableFloatingActionData(
       true,
       () async {
         await setRead();
       },
-      Icon(
+      const Icon(
         Icons.arrow_back_rounded,
+        color: Colors.white,
+      ),
+    );
+    floatingActionNotifierRight.value = HideableFloatingActionData(
+      true,
+      () async {
+        Todo todo = Todo(titleField.text, descriptionField.text, completed);
+        todo.id = itemToEdit!.id;
+        itemToEdit = todo;
+        await TodoAPI.updateTodo(todo);
+        await setRead();
+      },
+      const Icon(
+        Icons.send_rounded,
         color: Colors.white,
       ),
     );
@@ -152,48 +249,22 @@ class _MyHomePageState extends CRUDState<Todo> {
 
   @override
   Future<Todo> create() async {
-    print('creating');
-    return Todo('', '', false);
+    FormState formState = formKey.currentState as FormState;
+    if (formState.validate()) {
+      Todo todo =
+          Todo(titleField.text, descriptionField.text, completed, id: -2);
+      if (await TodoAPI.createTodo(todo)) return todo;
+    }
+    return Todo.empty;
   }
 
   @override
-  Widget createView(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              children: [
-                ListTile(
-                  title: Text('Title'),
-                  subtitle: TextFormField(
-                    controller: titleField,
-                  ),
-                ),
-                ListTile(
-                  title: Text('Description'),
-                  subtitle: TextFormField(
-                    controller: descriptionField,
-                  ),
-                ),
-                CheckboxListTile(
-                  title: Text('Completed'),
-                  value: completed,
-                  onChanged: (value) {
-                    setState(() {
-                      completed = value ?? false;
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-          Row(
-            children: [],
-          ),
-        ],
-      ),
-    );
+  Future<Todo> update(Todo item) async {
+    if (await TodoAPI.updateTodo(item)) {
+      return await TodoAPI.readTodo(item.id);
+    } else {
+      return Todo.empty;
+    }
   }
 
   @override
@@ -203,12 +274,16 @@ class _MyHomePageState extends CRUDState<Todo> {
   }
 
   @override
-  Widget deleteView(BuildContext context) {
-    if (itemToEdit != null) {
-      delete(itemToEdit!);
-    }
-    setRead();
-    return readView(context);
+  Widget createView(BuildContext context) {
+    return Center(
+      child: Column(
+        children: [
+          Expanded(
+            child: todoForm,
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -221,9 +296,10 @@ class _MyHomePageState extends CRUDState<Todo> {
               future: getTodos(),
               builder: (context, snapshot) {
                 List<Todo> list = snapshot.data ?? [];
-                print('got list: $list');
                 return RefreshIndicator(
-                  onRefresh: () async {},
+                  onRefresh: () async {
+                    setState(() {});
+                  },
                   child: ScrollConfiguration(
                     behavior: ScrollConfiguration.of(context).copyWith(
                       dragDevices: {
@@ -236,7 +312,6 @@ class _MyHomePageState extends CRUDState<Todo> {
                       itemCount: list.length,
                       itemBuilder: ((context, index) {
                         Todo item = list[index];
-                        print('Item ${item.id}: ${item.title}');
                         return ListTile(
                           onTap: () async {
                             var newTodo = item;
@@ -249,15 +324,15 @@ class _MyHomePageState extends CRUDState<Todo> {
                                 context: context,
                                 builder: (context) {
                                   return AlertDialog(
-                                    title: Text('Todo Options'),
+                                    title: const Text('Todo Options'),
                                     actions: [
                                       ListTile(
                                         onTap: () async {
                                           setUpdate(item);
                                           Navigator.of(context).pop();
                                         },
-                                        title: Text('Edit Todo'),
-                                        trailing: Icon(
+                                        title: const Text('Edit Todo'),
+                                        trailing: const Icon(
                                           Icons.edit_rounded,
                                           color: Colors.green,
                                         ),
@@ -267,15 +342,15 @@ class _MyHomePageState extends CRUDState<Todo> {
                                           setDelete(item);
                                           Navigator.of(context).pop();
                                         },
-                                        leading: Icon(
+                                        leading: const Icon(
                                           Icons.warning_rounded,
                                           color: Colors.red,
                                         ),
-                                        title: Text(
+                                        title: const Text(
                                           'Delete Todo',
                                           textAlign: TextAlign.center,
                                         ),
-                                        trailing: Icon(
+                                        trailing: const Icon(
                                           Icons.delete_rounded,
                                           color: Colors.red,
                                         ),
@@ -291,7 +366,7 @@ class _MyHomePageState extends CRUDState<Todo> {
                             onChanged: (value) async {
                               var newTodo = item;
                               newTodo.completed = value ?? false;
-                              await TodoAPI.updateTodo(newTodo);
+                              await update(newTodo);
                               setState(() {});
                             },
                           ),
@@ -309,45 +384,24 @@ class _MyHomePageState extends CRUDState<Todo> {
   }
 
   @override
-  Future<Todo> update(Todo item) {
-    // TODO: implement update
-    throw UnimplementedError();
-  }
-
-  @override
   Widget updateView(BuildContext context) {
     return Center(
       child: Column(
         children: [
           Expanded(
-            child: ListView(
-              children: [
-                ListTile(
-                  title: Text('Title'),
-                  subtitle: TextFormField(
-                    controller: titleField,
-                  ),
-                ),
-                ListTile(
-                  title: Text('Description'),
-                  subtitle: TextFormField(
-                    controller: descriptionField,
-                  ),
-                ),
-                CheckboxListTile(
-                  title: Text('Completed'),
-                  value: completed,
-                  onChanged: (value) {
-                    setState(() {
-                      completed = value ?? false;
-                    });
-                  },
-                ),
-              ],
-            ),
+            child: todoForm,
           ),
         ],
       ),
     );
+  }
+
+  @override
+  Widget deleteView(BuildContext context) {
+    if (itemToEdit != null) {
+      delete(itemToEdit!);
+    }
+    setRead();
+    return readView(context);
   }
 }

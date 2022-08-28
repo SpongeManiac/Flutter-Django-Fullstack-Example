@@ -1,12 +1,5 @@
-from django.views.generic import View, TemplateView
-from django.views.generic.edit import FormView
-from django.utils.decorators import method_decorator
-from django.forms.models import model_to_dict
 from rest_framework.response import Response
-
-
 from rest_framework import generics, pagination
-from rest_framework.renderers import JSONRenderer
 
 from .models import Todo
 from .serializers import TodoSerializer

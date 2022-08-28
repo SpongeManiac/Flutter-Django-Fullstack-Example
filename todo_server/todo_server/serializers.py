@@ -7,8 +7,8 @@ def getTime():
 
 class TodoSerializer(serializers.Serializer):
     id = serializers.ReadOnlyField()
-    title = serializers.CharField(max_length=128)
-    description = serializers.CharField(max_length=1024)
+    title = serializers.CharField(max_length=128, trim_whitespace=True)
+    description = serializers.CharField(max_length=1024, allow_blank=True, trim_whitespace=True)
     completed = serializers.BooleanField()
     date_completed = serializers.HiddenField(default=datetime.min)
     date_created = serializers.HiddenField(default=getTime())
