@@ -1,6 +1,6 @@
 # Flutter/Django Fullstack Todo App
 
-An example project to demonstrate how to create a fullstack crossplatform app using Flutter and Django.
+An example project to demonstrate how to create a fullstack, cross-platform app using Flutter and Django.
 This project is purely for learning purposes and is not production ready.
 
 ## Requirements
